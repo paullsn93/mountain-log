@@ -2,7 +2,7 @@
 name: 七星山（範例）
 elevation: 1120
 region: 台北
-coordinates: [25.1717, 121.5547]
+coordinates: { lat: 25.1717, lng: 121.5547 }
 difficulty: 2
 lists:
   - { list: small-baiyue }

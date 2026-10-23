@@ -1,0 +1,260 @@
+# Pages CMS 設定：在 https://app.pagescms.org 用網頁編輯這個網站的所有資料
+settings:
+  content:
+    merge: true          # 保留表單沒有的欄位，避免誤刪
+
+media:
+  - name: gpx
+    label: GPX 軌跡
+    input: public/gpx
+    output: /gpx
+    extensions: [gpx]
+    rename: false
+  - name: images
+    label: 封面圖片
+    input: public/covers
+    output: /covers
+    categories: [image]
+    rename: false
+
+content:
+  # ───────── 行程紀錄 ─────────
+  - name: trips
+    label: 行程紀錄（已爬）
+    type: collection
+    path: src/content/trips
+    format: yaml-frontmatter
+    subfolders: false
+    exclude: [".gitkeep"]
+    filename: "{date}-{hour}{minute}{second}.md"
+    view:
+      fields: [date, mountain, mood]
+      primary: date
+      sort: [date]
+      default: { sort: date, order: desc }
+    fields:
+      - name: mountain
+        label: 山名
+        type: reference
+        required: true
+        description: 先到「山岳資料」建立這座山，這裡才選得到。
+        options: { collection: mountains, value: "{path}", label: "{primary}", search: "fields.name,fields.region" }
+      - name: date
+        label: 日期
+        type: date
+        required: true
+        options: { format: "yyyy-MM-dd" }
+      - name: end_date
+        label: 結束日期（多日行程才填）
+        type: date
+        default: ""
+        options: { format: "yyyy-MM-dd" }
+      - name: companions
+        label: 伙伴（建議用暱稱，內容會公開）
+        type: string
+        list: true
+      - name: mood
+        label: 心情
+        type: select
+        options: { values: ["🤩", "😄", "🙂", "😐", "😫", "🥵", "🥶"], placeholder: 選一個表情 }
+      - name: mood_note
+        label: 心情短語
+        type: string
+      - name: gpx
+        label: GPX 軌跡
+        type: file
+        description: 上傳實際走的軌跡，里程與爬升會自動計算。
+        options: { media: gpx, extensions: [gpx] }
+      - name: album
+        label: 相簿連結（Google 相簿分享連結）
+        type: string
+      - name: cover
+        label: 封面照片
+        type: image
+        options: { media: images }
+      - name: videos
+        label: 影片（YouTube 連結）
+        type: object
+        list: { collapsible: { collapsed: false, summary: "{title}" } }
+        fields:
+          - { name: title, label: 標題, type: string, required: true }
+          - { name: url, label: 網址, type: string, required: true }
+      - name: lodging
+        label: 住宿（內容會公開）
+        type: object
+        list: { collapsible: { summary: "{name}" } }
+        fields:
+          - { name: name, label: 名稱, type: string, required: true }
+          - { name: url, label: 連結, type: string }
+          - { name: cost, label: 費用, type: number }
+          - { name: note, label: 備註, type: string }
+      - name: transport
+        label: 交通
+        type: string
+      - name: weather
+        label: 天氣
+        type: object
+        fields:
+          - { name: summary, label: 概況, type: string }
+          - { name: temp, label: 氣溫（°C）, type: number }
+          - { name: wind, label: 風, type: string }
+      - name: plan
+        label: 計畫行程
+        type: object
+        fields:
+          - { name: est_hours, label: 預估時數, type: number }
+          - { name: itinerary, label: 行程規劃, type: text }
+      - name: actual
+        label: 實際
+        type: object
+        fields:
+          - { name: hours, label: 實際時數, type: number }
+      - name: poi
+        label: 沿途景點
+        type: object
+        list: { collapsible: { summary: "{name}" } }
+        fields:
+          - { name: name, label: 名稱, type: string, required: true }
+          - name: coordinates
+            label: 座標
+            type: object
+            fields:
+              - { name: lat, label: 緯度, type: number }
+              - { name: lng, label: 經度, type: number }
+          - { name: note, label: 說明, type: string }
+      - name: rating
+        label: 感受評分
+        type: object
+        fields:
+          - { name: felt_difficulty, label: 體感難度（1～5）, type: number, options: { min: 1, max: 5 } }
+          - { name: recommend, label: 推薦度（1～5）, type: number, options: { min: 1, max: 5 } }
+      - name: references
+        label: 參考資料
+        type: reference
+        options: { collection: references, multiple: true, value: "{path}", label: "{primary}", search: "fields.title" }
+      - name: tags
+        label: 標籤
+        type: string
+        list: true
+      - name: visibility
+        label: 顯示設定
+        type: select
+        default: public
+        description: 選「hidden」網站不會顯示，但檔案仍在公開 repo，真正敏感的內容請不要填。
+        options:
+          values:
+            - { name: public, label: 公開 }
+            - { name: hidden, label: 隱藏 }
+      - name: body
+        label: 遊記
+        type: rich-text
+        options: { media: false }
+
+  # ───────── 山岳資料（含想爬的山）─────────
+  - name: mountains
+    label: 山岳資料（含想爬的山）
+    type: collection
+    path: src/content/mountains
+    format: yaml-frontmatter
+    subfolders: false
+    exclude: [".gitkeep"]
+    filename: { template: "{primary}.md", field: create }
+    view:
+      fields: [name, elevation, region, difficulty]
+      primary: name
+      sort: [name, elevation]
+      search: [name, region]
+    fields:
+      - { name: name, label: 山名, type: string, required: true }
+      - { name: elevation, label: 海拔（公尺）, type: number, required: true }
+      - { name: region, label: 地區, type: string, required: true }
+      - name: coordinates
+        label: 座標（山頂或登山口）
+        type: object
+        fields:
+          - { name: lat, label: 緯度, type: number }
+          - { name: lng, label: 經度, type: number }
+      - name: difficulty
+        label: 難度（1～5）
+        type: number
+        required: true
+        default: 2
+        description: "1 步道半日｜2 一日路況清楚｜3 一日長程或陡升｜4 兩天以上、山屋或露營｜5 多日縱走或高風險"
+        options: { min: 1, max: 5 }
+      - name: lists
+        label: 所屬清單（用來計算百岳／小百岳進度）
+        type: object
+        list: true
+        fields:
+          - name: list
+            label: 清單
+            type: select
+            required: true
+            options:
+              values:
+                - { name: baiyue, label: 百岳 }
+                - { name: small-baiyue, label: 小百岳 }
+          - { name: "no", label: 編號, type: number }
+      - name: planning
+        label: 行前規劃（想爬的山才需要）
+        type: object
+        fields:
+          - name: priority
+            label: 優先順序
+            type: select
+            default: medium
+            options:
+              values:
+                - { name: high, label: 很想去 }
+                - { name: medium, label: 想去 }
+                - { name: low, label: 有空再去 }
+          - { name: best_season, label: 最佳季節, type: string }
+          - { name: days, label: 預估天數, type: number }
+          - { name: permits, label: 申請需求, type: string }
+          - { name: risks, label: 風險與注意事項, type: text }
+      - name: gpx
+        label: 參考 GPX
+        type: file
+        options: { media: gpx, extensions: [gpx] }
+      - name: references
+        label: 參考資料（影片、網站等，不限數量）
+        type: reference
+        options: { collection: references, multiple: true, value: "{path}", label: "{primary}", search: "fields.title" }
+      - name: tags
+        label: 標籤
+        type: string
+        list: true
+      - name: body
+        label: 備註與心得
+        type: rich-text
+        options: { media: false }
+
+  # ───────── 參考資料 ─────────
+  - name: references
+    label: 參考資料（影片、網站、文章）
+    type: collection
+    path: src/content/references
+    format: yaml
+    subfolders: false
+    exclude: [".gitkeep"]
+    filename: "{year}{month}{day}{hour}{minute}{second}.yaml"
+    view:
+      fields: [title, type]
+      primary: title
+      search: [title, note]
+    fields:
+      - name: type
+        label: 類型
+        type: select
+        required: true
+        default: video
+        options:
+          values:
+            - { name: video, label: 影片 }
+            - { name: website, label: 網站 }
+            - { name: blog, label: 文章 }
+            - { name: map, label: 地圖 }
+            - { name: book, label: 書籍 }
+      - { name: title, label: 標題, type: string, required: true }
+      - { name: url, label: 網址, type: string, required: true }
+      - { name: note, label: 備註, type: string }

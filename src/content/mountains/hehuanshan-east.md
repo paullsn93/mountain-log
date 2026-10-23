@@ -2,7 +2,7 @@
 name: 合歡山東峰（範例）
 elevation: 3421
 region: 南投／花蓮
-coordinates: [24.1395, 121.2784]
+coordinates: { lat: 24.1395, lng: 121.2784 }
 difficulty: 2
 lists:
   - { list: baiyue }

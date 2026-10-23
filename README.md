@@ -26,20 +26,27 @@ npm run dev      # 開啟 http://localhost:4321/mountain-log/
 npm run check    # 檢查所有資料欄位是否正確
 ```
 
-## 日常使用
+## 日常使用：用網頁編輯（Pages CMS）
 
-| 想做的事 | 做法 |
-|---|---|
-| 新增一座山 / 想爬的山 | 在 `src/content/mountains/` 新增 `英文檔名.md`（複製範例改） |
-| 記錄一次行程 | 在 `src/content/trips/` 新增 `日期-山名.md`，`mountain:` 填山的檔名 |
-| 加參考資料 | 在 `src/content/references.yaml` 加一筆，山或行程用 `id` 引用 |
-| 放 GPX | 行程放 `public/gpx/trips/`，參考軌跡放 `public/gpx/ref/` |
-| 發佈 | `git add .` → `git commit -m "說明"` → `git push` |
+不用開 VS Code，也不用打指令：
 
-**「已爬」與「想爬」是自動判斷的**：某座山只要有行程紀錄就算已爬，沒有就出現在想爬清單。
+1. 打開 https://app.pagescms.org ，按 **Sign in with GitHub**。
+2. 第一次要按 **Install the GitHub App**，授權給 `paullsn93/mountain-log`（只選這一個 repo 即可）。
+3. 進入 `mountain-log`，左邊選單有三個項目：
+   - **山岳資料（含想爬的山）**：新增山、填難度、行前規劃、參考 GPX、參考資料。
+   - **行程紀錄（已爬）**：選山、日期、心情、上傳 GPX、相簿、影片、住宿、景點、遊記。
+   - **參考資料**：影片、網站、文章，數量不限；山和行程用下拉選單挑選。
+4. 填完按 **Save**。約 1～2 分鐘後網站自動更新（可到 repo 的 Actions 分頁看進度）。
 
-欄位寫錯（例如難度 9、山名拼錯、引用不存在的參考資料）時，`npm run dev` 或 `npm run check` 會直接告訴你哪個檔案哪個欄位有問題；
-push 後若資料有誤，GitHub Actions 會失敗而不會更新網站。
+**順序**：先建「參考資料」→ 再建「山」→ 最後記「行程」，這樣下拉選單才選得到。
+
+「已爬」與「想爬」是自動判斷的：某座山只要有行程紀錄就算已爬，沒有就出現在想爬清單。
+
+如果資料有誤（例如難度超出範圍），GitHub Actions 會顯示紅色叉叉，**網站維持上一個正常版本、不會壞掉**，修正後再存一次即可。
+
+### 進階：用電腦編輯
+也可以直接改 `src/content/` 內的檔案，`npm run check` 檢查，再 `git push`。
+**注意**：用網頁編輯後，電腦上的專案會落後，改檔案前請先執行 `git pull`。
 
 ## 難度定義
 
@@ -53,7 +60,8 @@ push 後若資料有誤，GitHub Actions 會失敗而不會更新網站。
 
 ## 隱私
 
-- 住宿、伙伴本名等不想公開的資料，放在 `src/private/trips/<行程檔名>.yaml`，已被 `.gitignore` 排除，不會上傳；本機預覽會顯示，公開網站不會。詳見 `src/private/README.md`。
+- **用網頁編輯時，填進去的所有內容都會存進公開 repo，任何人都看得到**。伙伴請用暱稱，住宿等敏感資料請不要填。
+- 若真的要保留私人資料，只能在電腦上放 `src/private/trips/<行程檔名>.yaml`（已被 `.gitignore` 排除，不會上傳；僅本機預覽顯示）。詳見 `src/private/README.md`。
 - 行程設 `visibility: hidden` 則整筆不顯示、也不納入統計。**注意**：檔案仍在公開 repo 內，真正敏感的內容請用上面的私人檔案。
 - 照片放 Google 相簿、影片放 YouTube，這裡只放連結。
 

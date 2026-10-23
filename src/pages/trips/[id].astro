@@ -26,6 +26,8 @@ const { Content } = await render(trip);
       <p><a href={url(`mountains/${m.id}/`)}>查看山的資料</a>{d.companions.length > 0 && <>　伙伴：{d.companions.join('、')}</>}</p>
     </div>
 
+    {d.cover && <img src={url(d.cover)} alt={`${m.data.name} 封面`} style="max-width:100%;height:auto;margin:1rem 0" />}
+
     {s && (
       <dl class="facts">
         <div><dt>里程</dt><dd>{fmtNum(s.distanceKm, 1)} 公里</dd></div>

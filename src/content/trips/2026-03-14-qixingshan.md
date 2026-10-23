@@ -14,7 +14,7 @@ weather: { summary: 晴時多雲, temp: 14, wind: 微風 }
 plan: { est_hours: 3, itinerary: "08:00 登山口出發 → 10:30 山頂 → 12:00 下山" }
 actual: { hours: 3.5 }
 poi:
-  - { name: 冷水坑, coordinates: [25.1659, 121.5583], note: 可泡腳 }
+  - { name: 冷水坑, coordinates: { lat: 25.1659, lng: 121.5583 }, note: 可泡腳 }
 rating: { felt_difficulty: 2, recommend: 5 }
 references: [sample-video]
 tags: [小百岳, 範例資料]

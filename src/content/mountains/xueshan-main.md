@@ -2,7 +2,7 @@
 name: 雪山主峰（範例）
 elevation: 3886
 region: 台中／苗栗
-coordinates: [24.3833, 121.2317]
+coordinates: { lat: 24.3833, lng: 121.2317 }
 difficulty: 4
 lists:
   - { list: baiyue }
