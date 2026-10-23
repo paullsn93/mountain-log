@@ -1,0 +1,58 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import RefList from '../../components/RefList.astro';
+import { loadAll, fmtDate, fmtNum } from '../../lib/data';
+import { difficultyLabels } from '../../lib/difficulty';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const { trips } = await loadAll();
+  return trips.map((t) => ({ params: { id: t.id }, props: { trip: t } }));
+}
+const { trip } = Astro.props;
+const { mountains, refMap } = await loadAll();
+const m = mountains.find((x) => x.id === trip.data.mountain)!;
+const d = trip.data;
+const s = trip.stats;
+const { Content } = await render(trip);
+---
+<Base title={`${m.data.name} ${fmtDate(d.date)}`}>
+  <main class="wrap">
+    <div class="page-head">
+      <p><a href={url('trips/')}>行程紀錄</a> / {fmtDate(d.date)}{d.end_date && <>～{fmtDate(d.end_date)}</>}</p>
+      <h1>{m.data.name} {d.mood}</h1>
+      {d.mood_note && <p>{d.mood_note}</p>}
+      <p><a href={url(`mountains/${m.id}/`)}>查看山的資料</a>{d.companions.length > 0 && <>　伙伴：{d.companions.join('、')}</>}</p>
+    </div>
+
+    {s && (
+      <dl class="facts">
+        <div><dt>里程</dt><dd>{fmtNum(s.distanceKm, 1)} 公里</dd></div>
+        <div><dt>累計爬升</dt><dd>{fmtNum(s.gainM)} 公尺</dd></div>
+        <div><dt>最高海拔</dt><dd>{fmtNum(s.maxEleM)} 公尺</dd></div>
+        {s.durationH !== null && <div><dt>全程時間</dt><dd>{fmtNum(s.durationH, 1)} 小時</dd></div>}
+        {d.rating?.felt_difficulty && <div><dt>體感難度</dt><dd>{d.rating.felt_difficulty} / 5</dd></div>}
+        {d.rating?.recommend && <div><dt>推薦度</dt><dd>{d.rating.recommend} / 5</dd></div>}
+      </dl>
+    )}
+    {d.gpx && <p><a href={url(d.gpx)} download>下載 GPX</a>（軌跡地圖與海拔剖面將於下一階段加入）</p>}
+
+    <h2>行程資訊</h2>
+    <table>
+      {d.transport && <tr><th>交通</th><td>{d.transport}</td></tr>}
+      {d.weather && <tr><th>天氣</th><td>{[d.weather.summary, d.weather.temp !== undefined && `${d.weather.temp}°C`, d.weather.wind && `風：${d.weather.wind}`].filter(Boolean).join('，')}</td></tr>}
+      {d.plan && <tr><th>預計</th><td>{d.plan.est_hours && `${d.plan.est_hours} 小時　`}{d.plan.itinerary}</td></tr>}
+      {d.actual?.hours && <tr><th>實際</th><td>{d.actual.hours} 小時</td></tr>}
+      {d.lodging.length > 0 && <tr><th>住宿</th><td>{d.lodging.map((l) => (<div>{l.url ? <a href={l.url}>{l.name}</a> : l.name}{l.cost && `　$${fmtNum(l.cost)}`}{l.note && `　${l.note}`}</div>))}</td></tr>}
+      {d.poi.length > 0 && <tr><th>沿途景點</th><td>{d.poi.map((p) => (<div>{p.name}{p.note && `　${p.note}`}</div>))}</td></tr>}
+      {d.album && <tr><th>相簿</th><td><a href={d.album} target="_blank" rel="noopener">Google 相簿</a></td></tr>}
+      {d.videos.length > 0 && <tr><th>影片</th><td>{d.videos.map((v) => <div><a href={v.url} target="_blank" rel="noopener">{v.title}</a></div>)}</td></tr>}
+    </table>
+
+    <div class="prose"><Content /></div>
+
+    <h2>參考資料</h2>
+    <RefList ids={d.references} refMap={refMap} />
+  </main>
+</Base>

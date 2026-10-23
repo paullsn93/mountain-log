@@ -1,0 +1,16 @@
+{
+  "name": "mountain-log",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro build --silent && echo ✅ 資料檢查通過"
+  },
+  "dependencies": {
+    "astro": "^5.18.2",
+    "yaml": "^2.8.0"
+  }
+}

@@ -1,0 +1,45 @@
+---
+import Base from '../layouts/Base.astro';
+import Contour from '../components/Contour.astro';
+import { loadAll, fmtDate, fmtNum } from '../lib/data';
+import { url } from '../lib/url';
+const { trips, wishlist, totals, mountains } = await loadAll();
+const recent = trips.slice(0, 5);
+const next = wishlist[0];
+const nameOf = (id: string) => mountains.find((m) => m.id === id)?.data.name ?? id;
+---
+<Base>
+  <section class="hero">
+    <Contour />
+    <div class="wrap">
+      <h1>走過的山，和想走的山</h1>
+      <p>行程、軌跡與參考資料，都記在這裡。</p>
+      <dl class="totals">
+        <div><dt>登頂座數</dt><dd>{totals.peaks}</dd></div>
+        <div><dt>行程次數</dt><dd>{totals.trips}</dd></div>
+        <div><dt>累計里程</dt><dd>{fmtNum(totals.distanceKm, 1)} 公里</dd></div>
+        <div><dt>累計爬升</dt><dd>{fmtNum(totals.gainM)} 公尺</dd></div>
+      </dl>
+    </div>
+  </section>
+  <main class="wrap">
+    <h2>最近的行程</h2>
+    {recent.length === 0 ? <p class="empty">還沒有行程。在 src/content/trips/ 新增一個檔案就會出現在這裡。</p> : (
+      <ul class="rows">
+        {recent.map((t) => (
+          <li>
+            <span class="when">{fmtDate(t.data.date)}</span>
+            <div class="body">
+              <h3><a href={url(`trips/${t.id}/`)}>{nameOf(t.data.mountain)}</a> {t.data.mood}</h3>
+              <p class="meta">{t.stats ? `${fmtNum(t.stats.distanceKm, 1)} 公里・爬升 ${fmtNum(t.stats.gainM)} 公尺` : '尚無 GPX'}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+    {next && (<>
+      <h2>下一座想爬的山</h2>
+      <p><a href={url(`mountains/${next.id}/`)}>{next.data.name}</a>，海拔 {fmtNum(next.data.elevation)} 公尺{next.data.planning?.best_season && <>，最佳季節 {next.data.planning.best_season}</>}。</p>
+    </>)}
+  </main>
+</Base>

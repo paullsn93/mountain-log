@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadAll, fmtDate, fmtNum } from '../../lib/data';
+import { url } from '../../lib/url';
+const { trips, mountains } = await loadAll();
+const nameOf = (id: string) => mountains.find((m) => m.id === id)?.data.name ?? id;
+const years = [...new Set(trips.map((t) => t.data.date.getUTCFullYear()))];
+---
+<Base title="行程紀錄">
+  <main class="wrap">
+    <div class="page-head"><h1>行程紀錄</h1><p>共 {trips.length} 次行程</p></div>
+    {years.map((y) => (<>
+      <h2>{y} 年</h2>
+      <ul class="rows">
+        {trips.filter((t) => t.data.date.getUTCFullYear() === y).map((t) => (
+          <li>
+            <span class="when">{fmtDate(t.data.date)}</span>
+            <div class="body">
+              <h3><a href={url(`trips/${t.id}/`)}>{nameOf(t.data.mountain)}</a> {t.data.mood}</h3>
+              <p class="meta">{t.stats ? `${fmtNum(t.stats.distanceKm, 1)} 公里・爬升 ${fmtNum(t.stats.gainM)} 公尺` : '尚無 GPX'}</p>
+              <p>{t.data.tags.map((x) => <span class="tag">{x}</span>)}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </>))}
+  </main>
+</Base>

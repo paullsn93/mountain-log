@@ -1,0 +1,60 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import RefList from '../../components/RefList.astro';
+import { loadAll, fmtDate, fmtNum } from '../../lib/data';
+import { difficultyLabels, priorityLabels } from '../../lib/difficulty';
+import { gpxStats } from '../../lib/gpx';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const { mountains } = await loadAll();
+  return mountains.map((m) => ({ params: { slug: m.id }, props: { m } }));
+}
+const { m } = Astro.props;
+const { trips, refMap, lists } = await loadAll();
+const d = m.data;
+const myTrips = trips.filter((t) => t.data.mountain === m.id);
+const ref = d.gpx ? gpxStats(d.gpx) : null;
+const { Content } = await render(m);
+const listName = (id: string) => lists.find((l) => l.id === id)?.data.name ?? id;
+---
+<Base title={d.name}>
+  <main class="wrap">
+    <div class="page-head">
+      <p><a href={url('mountains/')}>山岳資料</a></p>
+      <h1>{d.name} {myTrips.length > 0 && <span class="tag pill-climbed">已登頂 {myTrips.length} 次</span>}</h1>
+      <p>{d.region}・海拔 {fmtNum(d.elevation)} 公尺</p>
+      <p>{d.lists.map((l) => <span class="tag">{listName(l.list)}{l.no && ` #${l.no}`}</span>)}{d.tags.map((x) => <span class="tag">{x}</span>)}</p>
+    </div>
+
+    <dl class="facts">
+      <div><dt>難度</dt><dd>{d.difficulty} / 5</dd></div>
+      {ref && <div><dt>參考里程</dt><dd>{fmtNum(ref.distanceKm, 1)} 公里</dd></div>}
+      {ref && <div><dt>參考爬升</dt><dd>{fmtNum(ref.gainM)} 公尺</dd></div>}
+    </dl>
+    <p>{difficultyLabels[d.difficulty]}</p>
+    {d.gpx && <p><a href={url(d.gpx)} download>下載參考 GPX</a></p>}
+
+    {d.planning && (<>
+      <h2>行前資訊</h2>
+      <table>
+        <tr><th>優先順序</th><td>{priorityLabels[d.planning.priority]}</td></tr>
+        {d.planning.best_season && <tr><th>最佳季節</th><td>{d.planning.best_season}</td></tr>}
+        {d.planning.days && <tr><th>預估天數</th><td>{d.planning.days} 天</td></tr>}
+        {d.planning.permits && <tr><th>申請</th><td>{d.planning.permits}</td></tr>}
+        {d.planning.risks && <tr><th>風險</th><td>{d.planning.risks}</td></tr>}
+      </table>
+    </>)}
+
+    <div class="prose"><Content /></div>
+
+    <h2>爬過的紀錄</h2>
+    {myTrips.length === 0 ? <p class="empty">還沒爬過。</p> : (
+      <ul>{myTrips.map((t) => <li><a href={url(`trips/${t.id}/`)}>{fmtDate(t.data.date)}</a> {t.data.mood}</li>)}</ul>
+    )}
+
+    <h2>參考資料</h2>
+    <RefList ids={d.references} refMap={refMap} />
+  </main>
+</Base>

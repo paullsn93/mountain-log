@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadAll } from '../../lib/data';
+import { url } from '../../lib/url';
+const { lists, mountains, climbedSlugs } = await loadAll();
+const rows = lists.map((l) => {
+  const done = mountains.filter((m) => climbedSlugs.has(m.id) && m.data.lists.some((x) => x.list === l.id)).length;
+  const total = l.data.total ?? l.data.items.length;
+  return { l, done, total };
+});
+---
+<Base title="百岳進度">
+  <main class="wrap">
+    <div class="page-head"><h1>百岳與小百岳進度</h1></div>
+    <div class="notice">完整名單與官方來源將在下一階段建立；目前進度依你標記了該清單的山計算。</div>
+    {rows.map(({ l, done, total }) => (<>
+      <h2>{l.data.name}　{done}{total > 0 && <> / {total}</>}</h2>
+      {total > 0 && <div class="progress" role="progressbar" aria-valuenow={done} aria-valuemin="0" aria-valuemax={total}><span style={`width:${Math.min(100, (done / total) * 100)}%`}></span></div>}
+      {l.data.items.length > 0 && (
+        <ul class="rows">
+          {l.data.items.map((it) => (
+            <li><span class="when">#{it.no}</span><div class="body"><h3>{it.mountain && climbedSlugs.has(it.mountain) ? '✔ ' : ''}{it.mountain ? <a href={url(`mountains/${it.mountain}/`)}>{it.name}</a> : it.name}</h3></div></li>
+          ))}
+        </ul>
+      )}
+      {l.data.source && <p class="meta">資料來源：<a href={l.data.source.url}>{l.data.source.title}</a></p>}
+    </>))}
+  </main>
+</Base>

@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadAll } from '../lib/data';
+import { refTypeLabels } from '../lib/difficulty';
+const { references } = await loadAll();
+const types = Object.keys(refTypeLabels) as (keyof typeof refTypeLabels)[];
+---
+<Base title="參考資料">
+  <main class="wrap">
+    <div class="page-head"><h1>參考資料</h1><p>共 {references.length} 筆</p></div>
+    {types.map((t) => {
+      const items = references.filter((r) => r.data.type === t);
+      return items.length > 0 && (<>
+        <h2>{refTypeLabels[t]}</h2>
+        <ul>{items.map((r) => <li><a href={r.data.url} target="_blank" rel="noopener">{r.data.title}</a>{r.data.note && <> — {r.data.note}</>}</li>)}</ul>
+      </>);
+    })}
+  </main>
+</Base>

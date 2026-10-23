@@ -1,0 +1,23 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadAll, fmtNum } from '../../lib/data';
+import { url } from '../../lib/url';
+const { mountains, climbedSlugs } = await loadAll();
+---
+<Base title="山岳資料">
+  <main class="wrap">
+    <div class="page-head"><h1>山岳資料</h1><p>共 {mountains.length} 座，爬過的會標示「已登頂」。</p></div>
+    <ul class="rows">
+      {mountains.map((m) => (
+        <li>
+          <span class="when">{fmtNum(m.data.elevation)} 公尺</span>
+          <div class="body">
+            <h3><a href={url(`mountains/${m.id}/`)}>{m.data.name}</a> {climbedSlugs.has(m.id) && <span class="tag pill-climbed">已登頂</span>}</h3>
+            <p class="meta">{m.data.region}・難度 {m.data.difficulty}</p>
+            <p>{m.data.tags.map((x) => <span class="tag">{x}</span>)}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </main>
+</Base>

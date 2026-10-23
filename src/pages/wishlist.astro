@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadAll, fmtNum } from '../lib/data';
+import { priorityLabels, difficultyLabels } from '../lib/difficulty';
+import { url } from '../lib/url';
+const { wishlist } = await loadAll();
+---
+<Base title="想爬清單">
+  <main class="wrap">
+    <div class="page-head"><h1>想爬清單</h1><p>尚未爬過的山，依優先順序排列。</p></div>
+    {wishlist.length === 0 ? <p class="empty">清單是空的。在 src/content/mountains/ 新增一座山，沒有行程紀錄就會出現在這裡。</p> : (
+      <ul class="rows">
+        {wishlist.map((m) => (
+          <li>
+            <span class="when">{priorityLabels[m.data.planning?.priority ?? 'low']}</span>
+            <div class="body">
+              <h3><a href={url(`mountains/${m.id}/`)}>{m.data.name}</a></h3>
+              <p class="meta">{fmtNum(m.data.elevation)} 公尺・難度 {m.data.difficulty}（{difficultyLabels[m.data.difficulty]}）</p>
+              <p class="meta">{[m.data.planning?.best_season && `最佳季節 ${m.data.planning.best_season}`, m.data.planning?.days && `${m.data.planning.days} 天`, m.data.planning?.permits].filter(Boolean).join('・')}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </main>
+</Base>

@@ -1,0 +1,5 @@
+name: 百岳
+total: 100
+# 階段 3 會依官方公開資料建立完整名單，並填入 source。
+# items 格式：- { no: 1, name: 山名, elevation: 3952, mountain: 對應的山檔名 }
+items: []

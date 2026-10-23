@@ -1,0 +1,31 @@
+---
+import '../styles/global.css';
+import { url } from '../lib/url';
+interface Props { title?: string; }
+const { title } = Astro.props;
+const nav = [
+  ['trips/', '行程紀錄'], ['mountains/', '山岳資料'], ['wishlist/', '想爬清單'], ['lists/', '百岳進度'], ['references/', '參考資料'],
+];
+const path = Astro.url.pathname;
+---
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title ? `${title}｜登山紀錄` : '登山紀錄'}</title>
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="site-head">
+      <div class="wrap">
+        <a class="brand" href={url()}>登山紀錄</a>
+        <nav aria-label="主選單">
+          {nav.map(([href, label]) => <a href={url(href)} aria-current={path.startsWith(url(href)) ? 'page' : undefined}>{label}</a>)}
+        </nav>
+      </div>
+    </header>
+    <slot />
+    <footer><div class="wrap">我的登山資訊站 · 使用 Astro 建置，託管於 GitHub Pages</div></footer>
+  </body>
+</html>
